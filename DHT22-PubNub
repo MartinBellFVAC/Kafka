@@ -1,0 +1,94 @@
+import Adafruit_DHT as dht
+import sys
+from pubnub import Pubnub
+from datetime import datetime
+import statistics
+
+
+
+Pubnub = Pubnub(publish_key='pub-c-61695fa6-317d-42aa-8f73-1bead73191ad', subscribe_key='sub-c-d5b343d8-3943-11e6-a169-02ee2ddab7fe')
+
+
+def callback():
+
+#defines a global variable for name
+    global name
+    name = '[Christopher '
+#Sets the time to now 
+    now = datetime.now()
+#Defines a global variable for date
+    global date
+    date = "[" + str(now.day) + str("/") + str(now.month) + str("/") + str(now.year)
+#Defines a global variable for time
+    global time
+    time =  "[" + str(now.hour) + str(":") + str(now.minute) + str(":") + str(now.second)
+#Sets the rest time for sensor before it displays the data again
+    rest = 2.0
+    h,t = dht.read_retry(dht.DHT22, 4)
+#Sets a global variable for the temperature and humidity
+    global TH
+    TH = ' [{0:0.1f}  [{1:0.1f}'.format(t, h)
+#Sets a global variable for the string
+    global myString
+    myString = name + date + time + TH
+    print(myString)
+    import time
+    time.sleep(rest)
+    
+
+
+    
+#Defines the channel name from pubnub 
+    channel = 'TempandHumid'
+
+    data = {
+        
+        '': myString
+    }
+
+#Publishs the data to pubnub 
+    Pubnub.publish(channel, data, callback=callback, error=callback)
+    
+
+#Slits the data by finding the open bracket
+def myparser(myString):
+    mylist=myString.split("[")
+    return mylist
+
+   
+
+
+   
+#Calls the function six times    
+for i in range(6):
+    callback()
+     
+
+
+myparse=myparser(myString)
+
+#Finds the open brackets from the string
+print(myparse)
+myname=myparse[1]
+mydate=myparse[2]
+mytime=myparse[3]
+mytemp=myparse[4]
+myhumid=myparse[5]
+
+float(mytemp)
+float(myhumid)
+
+#Prints the parsed data
+print i
+print(myname)
+print(mydate)
+
+print(mytime)
+print(float(mytemp))
+print(float(myhumid))
+
+#Calls the function 
+myparser(myString)
+
+#Stores the data in an array
+myarray=[myname,mydate,mytime,mytemp,myhumid]
